@@ -31,7 +31,9 @@ Update this file with your preferences.
 
 # Containers name
 DB_CONTAINER_NAME=cloud-db
+DB_IMAGE_TAG=latest
 APP_CONTAINER_NAME=cloud-app
+APP_IMAGE_TAG=latest
 
 # Mysql settings
 MYSQL_HOST=cloud-db
@@ -44,25 +46,32 @@ MYSQL_PASSWORD=cloud,user,password
 NEXTCLOUD_ADMIN_USER=admin
 NEXTCLOUD_ADMIN_PASSWORD=admin,password
 
+# Nextcloud environnement
+NEXTCLOUD_OVERWRITEPROTOCOL=https
+
 # Nextcloud data path
 NEXTCLOUD_DATA_DIR=/var/www/html/data
 NEXTCLOUD_TABLE_PREFIX=
 
 # Nextcloud local data path
+LOCAL_DB_DIR=./cloud/data/db
+LOCAL_DATA_DIR=./cloud/data/cloud
+LOCAL_CONF_DIR=./cloud/data/cloud/config
+LOCAL_APPS_DIR=./cloud/data/cloud/apps
 
 # PHP limits
 PHP_MEMORY_LIMIT=64M
 PHP_UPLOAD_LIMIT=128M
 
-# Host 
+# Host
 VIRTUAL_HOST=cloud.yourdomain.com
 LETSENCRYPT_HOST=cloud.yourdomain.com
 LETSENCRYPT_EMAIL=your_email@yourdomain.com
 
 #
 # Network name
-# 
-# Your container app must use a network conencted to your webproxy 
+#
+# Your container app must use a network connected to your webproxy
 # https://github.com/evertramos/docker-compose-letsencrypt-nginx-proxy-companion
 #
 NETWORK=webproxy
