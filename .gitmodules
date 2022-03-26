@@ -1,0 +1,3 @@
+[submodule "linux-commons"]
+	path = linux-commons
+	url = https://github.com/BirdDev/linux-commons.git
