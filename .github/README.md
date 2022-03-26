@@ -49,10 +49,10 @@ NEXTCLOUD_DATA_DIR=/var/www/html/data
 NEXTCLOUD_TABLE_PREFIX=
 
 # Nextcloud local data path
-LOCAL_DB_DIR=/home/user/cloud/data/db
-LOCAL_DATA_DIR=/home/user/cloud/data/cloud
-LOCAL_CONF_DIR=/home/user/cloud/data/cloud/config
-LOCAL_APPS_DIR=/home/user/cloud/data/cloud/apps
+
+# PHP limits
+PHP_MEMORY_LIMIT=64M
+PHP_UPLOAD_LIMIT=128M
 
 # Host 
 VIRTUAL_HOST=cloud.yourdomain.com
