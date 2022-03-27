@@ -6,7 +6,7 @@ common_lib_file="$BASEDIR/common.lib.sh"
 if [ -f "$common_lib_file" ]; then
     . "$common_lib_file"
 else
-    log_fail "Required file does not exist at '$common_lib_file'." && return 1
+    echo "Required file does not exist at '$common_lib_file'." && return 1
 fi
 
 disable_maintenance_mode

@@ -2,18 +2,18 @@
 
 BASEDIR=$(dirname "$0")
 
+linux_commons_file="$BASEDIR/linux-commons/lib.commons.sh"
+if [ -f "$linux_commons_file" ]; then
+    . "$linux_commons_file"
+else
+    echo "Required file does not exist at '$linux_commons_file'." && return 1
+fi
+
 env_vars_file="$BASEDIR/.env"
 if [ -f "$env_vars_file" ]; then
     . "$env_vars_file"
 else
     log_fail "Required file does not exist at '$env_vars_file'." && return 1
-fi
-
-linux_commons_file="$BASEDIR/linux-commons/lib.commons.sh"
-if [ -f "$linux_commons_file" ]; then
-    . "$linux_commons_file"
-else
-    log_fail "Required file does not exist at '$linux_commons_file'." && return 1
 fi
 
 is_maintenance_mode_enabled() {
