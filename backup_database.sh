@@ -9,7 +9,19 @@ else
     echo "Required file does not exist at '$common_lib_file'." && return 1
 fi
 
-require_root_user &&
-    enable_maintenance_mode &&
-    dump_database &&
-    disable_maintenance_mode
+backup_database() {
+    local _maintenance_mode_enabled
+    _maintenance_mode_enabled=$(is_maintenance_mode_enabled)
+
+    if [ ! "$_maintenance_mode_enabled" ]; then
+        enable_maintenance_mode || return 1
+    fi
+
+    dump_database
+
+    if [ ! "$_maintenance_mode_enabled" ]; then
+        disable_maintenance_mode
+    fi
+}
+
+backup_database
