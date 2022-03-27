@@ -16,8 +16,14 @@ else
     echo "Required file does not exist at '$linux_commons_file'." && return 1
 fi
 
+is_maintenance_mode_enabled() {
+    docker exec --user www-data "$APP_CONTAINER_NAME" php occ maintenance:mode | grep enabled &&
+        return 0 ||
+        return 1
+}
+
 require_enabled_maintenance_mode() {
-    if docker exec --user www-data "$APP_CONTAINER_NAME" php occ maintenance:mode | grep enabled; then
+    if is_maintenance_mode_enabled; then
         return 0
     else
         echo "Maintenance mode is required to be enabled" &&
@@ -26,15 +32,21 @@ require_enabled_maintenance_mode() {
 }
 
 enable_maintenance_mode() {
-    docker exec --user www-data "$APP_CONTAINER_NAME" php occ maintenance:mode --on
+    is_maintenance_mode_enabled ||
+        docker exec --user www-data "$APP_CONTAINER_NAME" php occ maintenance:mode --on
 }
 
 disable_maintenance_mode() {
-    docker exec --user www-data "$APP_CONTAINER_NAME" php occ maintenance:mode --off
+    is_maintenance_mode_enabled &&
+        docker exec --user www-data "$APP_CONTAINER_NAME" php occ maintenance:mode --off
 }
 
 dump_database() {
+    local _db_dump_dir
+    _db_dump_dir="$__LOCAL_DIR/cloud-db-dump.sql"
+
     require_root_user &&
-    require_enabled_maintenance_mode &&
-        docker exec --user www-data "$DB_CONTAINER_NAME" mysqldump --single-transaction -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" --protocol=tcp >"$__LOCAL_DIR/cloud-db-dump.sql"
+        require_enabled_maintenance_mode &&
+        docker exec --user www-data "$DB_CONTAINER_NAME" mysqldump -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" --single-transaction --protocol=tcp >"$_db_dump_dir" &&
+        echo "Backed up database to '$_db_dump_dir'."
 }
