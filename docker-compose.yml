@@ -5,6 +5,7 @@ services:
      container_name: ${DB_CONTAINER_NAME}
      image: mariadb:${DB_IMAGE_TAG}
      restart: unless-stopped
+     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
      volumes:
         - ${LOCAL_DB_DIR}:/var/lib/mysql
      environment:
@@ -12,6 +13,7 @@ services:
        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
        MYSQL_USER: ${MYSQL_USER}
        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+       MARIADB_AUTO_UPGRADE: 1
 
    cloud-app:
      depends_on:
