@@ -104,3 +104,33 @@ backup_database() {
 
     log_step_result 'Backup database'
 }
+
+restore_database() {
+    require_root_user ||
+        return 1
+
+    local _maintenance_mode_enabled
+    _maintenance_mode_enabled=$(is_maintenance_mode_enabled)
+
+    if [ ! "$_maintenance_mode_enabled" ]; then
+        enable_maintenance_mode ||
+            return 1
+    fi
+
+    local _db_dump_dir _db_dump_file
+    _db_dump_dir="$__LOCAL_DIR"
+    _db_dump_file="$_db_dump_dir/cloud-db-dump.sql"
+
+    [ ! -f "$_db_dump_file" ] && log_fail "DB dump file '$_db_dump_file' not found." && return 1
+
+    docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "DROP DATABASE $MYSQL_DATABASE" --protocol=tcp &&
+        docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "CREATE DATABASE $MYSQL_DATABASE" --protocol=tcp &&
+        docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" --protocol=tcp <"$_db_dump_file"
+
+    log_step_result 'Backup database'
+
+    if [ ! "$_maintenance_mode_enabled" ]; then
+        disable_maintenance_mode ||
+            return 1
+    fi
+}
