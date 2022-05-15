@@ -123,11 +123,14 @@ restore_database() {
 
     [ ! -f "$_db_dump_file" ] && log_fail "DB dump file '$_db_dump_file' not found." && return 1
 
-    docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "DROP DATABASE $MYSQL_DATABASE" --protocol=tcp &&
-        docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "CREATE DATABASE $MYSQL_DATABASE" --protocol=tcp &&
-        docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" --protocol=tcp <"$_db_dump_file"
+    docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e "DROP DATABASE $MYSQL_DATABASE" --protocol=tcp &&
+        log_success "Dropped database"
+    docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "CREATE DATABASE $MYSQL_DATABASE" --protocol=tcp &&
+        log_success "Created database"
+    docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" --protocol=tcp <"$_db_dump_file" &&
+        log_success "Restored database"
 
-    log_step_result 'Backup database'
+    log_step_result 'Restore database'
 
     if [ ! "$_maintenance_mode_enabled" ]; then
         disable_maintenance_mode ||
