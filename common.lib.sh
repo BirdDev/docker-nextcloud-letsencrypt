@@ -136,4 +136,7 @@ restore_database() {
         disable_maintenance_mode ||
             return 1
     fi
+
+    occ_exec maintenance:data-fingerprint &&
+        log_success "Generate data fingerprints"
 }
