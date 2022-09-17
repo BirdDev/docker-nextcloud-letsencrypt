@@ -66,7 +66,6 @@ PHP_UPLOAD_LIMIT=128M
 # Host
 VIRTUAL_HOST=cloud.yourdomain.com
 LETSENCRYPT_HOST=cloud.yourdomain.com
-LETSENCRYPT_EMAIL=your_email@yourdomain.com
 
 #
 # Network name
