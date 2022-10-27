@@ -75,7 +75,7 @@ dump_database() {
             require_enabled_maintenance_mode &&
             touch "$_db_dump_file" &&
             sudo_set_file_permission 'root:root' '400' "$_db_dump_file"
-        docker exec --user www-data "$DB_CONTAINER_NAME" mysqldump -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" --single-transaction --protocol=tcp >"$_db_dump_file"
+        docker exec --user www-data "$DB_CONTAINER_NAME" mysqldump -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" --single-transaction --protocol=tcp >"$_db_dump_file"
     }
 
     __internal_dump_database
@@ -114,7 +114,7 @@ restore_database() {
 
     if [ ! "$_maintenance_mode_enabled" ]; then
         enable_maintenance_mode ||
-            return 1
+            log_warn "Failed to enable maintenance mode"
     fi
 
     local _db_dump_dir _db_dump_file
@@ -123,20 +123,22 @@ restore_database() {
 
     [ ! -f "$_db_dump_file" ] && log_fail "DB dump file '$_db_dump_file' not found." && return 1
 
-    docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e "DROP DATABASE $MYSQL_DATABASE" --protocol=tcp &&
-        log_success "Dropped database"
-    docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "CREATE DATABASE $MYSQL_DATABASE" --protocol=tcp &&
-        log_success "Created database"
-    docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" --protocol=tcp <"$_db_dump_file" &&
-        log_success "Restored database"
+    docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e "DROP DATABASE $MYSQL_DATABASE" --protocol=tcp &&
+        log_success "Dropped database '$MYSQL_DATABASE'" &&
+        docker exec --user www-data "$DB_CONTAINER_NAME" mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "CREATE DATABASE $MYSQL_DATABASE CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci" --protocol=tcp &&
+        log_success "Created database '$MYSQL_DATABASE'" &&
+        log_info 'Restoring database' &&
+        mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" --protocol=tcp <"$_db_dump_file" &&
+        log_success "Restored database '$MYSQL_DATABASE'"
 
-    log_step_result 'Restore database'
+    log_step_result "Restore database '$MYSQL_DATABASE'"
+
+    log_info 'Generating data fingerprints' &&
+        occ_exec maintenance:data-fingerprint &&
+        log_success "Generate data fingerprints"
 
     if [ ! "$_maintenance_mode_enabled" ]; then
         disable_maintenance_mode ||
             return 1
     fi
-
-    occ_exec maintenance:data-fingerprint &&
-        log_success "Generate data fingerprints"
 }
