@@ -7,7 +7,7 @@ services:
      restart: unless-stopped
      command: --transaction-isolation=READ-COMMITTED --log-bin=mysqld-bin --binlog-format=ROW
      volumes:
-        - ${LOCAL_DB_DIR}:/var/lib/mysql
+        - db_data:/var/lib/mysql
      environment:
        MYSQL_DATABASE: ${MYSQL_DATABASE}
        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -22,9 +22,9 @@ services:
      image: nextcloud:${APP_IMAGE_TAG}
      restart: unless-stopped
      volumes:
-       - ${LOCAL_DATA_DIR}:/var/www/html
-       - ${LOCAL_CONF_DIR}:/var/www/html/config
-       - ${LOCAL_APPS_DIR}:/var/www/html/apps
+       - cloud_data:/var/www/html
+       - cloud_config:/var/www/html/config
+       - cloud_apps:/var/www/html/apps
        - ./conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini
      environment:
        NEXTCLOUD_ADMIN_USER: ${NEXTCLOUD_ADMIN_USER}
@@ -41,6 +41,12 @@ services:
        MYSQL_USER: ${MYSQL_USER}
        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
        MYSQL_HOST: ${MYSQL_HOST}
+
+volumes:
+  db_data:
+  cloud_data:
+  cloud_config:
+  cloud_apps:
 
 networks:
     default:
